@@ -50,10 +50,14 @@ jobs:
           version: 4.7.2-stable
           export-templates: true
 
-      - name: Export Web build
+      - name: Export unique Web build
         run: |
-          godot --headless --path project --export-release "Web" "$GITHUB_WORKSPACE/build/index.html"
+          BUILD_BASE="game-${GITHUB_SHA}"
+          godot --headless --path project --export-release "Web" "$GITHUB_WORKSPACE/build/${BUILD_BASE}.html"
+          mv "$GITHUB_WORKSPACE/build/${BUILD_BASE}.html" "$GITHUB_WORKSPACE/build/index.html"
+          printf '%s\n' "$GITHUB_SHA" > "$GITHUB_WORKSPACE/build/version.txt"
           touch "$GITHUB_WORKSPACE/build/.nojekyll"
+          ls -lah "$GITHUB_WORKSPACE/build"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
