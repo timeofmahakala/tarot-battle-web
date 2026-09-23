@@ -32,9 +32,36 @@ jobs:
           mkdir -p project build
           unzip -o tarot_web_src.zip -d project
 
+      - name: Bundle Korean font
+        run: |
+          mkdir -p project/assets/fonts
+          curl -L --fail --retry 3 \
+            "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-Regular.ttf" \
+            -o project/assets/fonts/NanumGothic-Regular.ttf
+          printf '\n[gui]\ntheme/custom_font="res://assets/fonts/NanumGothic-Regular.ttf"\n' >> project/project.godot
+
       - name: Setup Godot
         uses: solarlabyrinth/action-setup-godot@v3
         with:
+          version: 4.7.2-stable
+          export-templates: true
+
+      - name: Export Web build
+        run: |
+          godot --headless --path project --export-release "Web" "$GITHUB_WORKSPACE/build/index.html"
+          touch "$GITHUB_WORKSPACE/build/.nojekyll"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4        with:
           version: 4.7.2-stable
           export-templates: true
 
